@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:///./cloudsim.db
+    volumes:
+      - ./backend:/app
+      - cloudsim_db:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend/src:/app/src
+
+volumes:
+  cloudsim_db:
